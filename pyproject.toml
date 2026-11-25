@@ -1,0 +1,69 @@
+[project]
+name = "far-strings"
+version = "0.1.0"
+description = "STRinGS (Selective Text Refinement in Gaussian Splatting) - uv environment for Windows + Blackwell GPUs"
+readme = "README.md"
+requires-python = "==3.12.*"
+dependencies = [
+    # PyTorch built against CUDA 12.9 (required for Blackwell sm_100 / sm_120)
+    "torch==2.8.0",
+    "torchvision==0.23.0",
+    # Original project dependencies (see enironment.yml), bumped where needed for Python 3.12
+    "numpy>=1.26.4,<2",
+    "scipy>=1.13.1",
+    "opencv-python==4.11.0.86",
+    "pillow",
+    "joblib>=1.4.2",
+    "matplotlib>=3.9.4",
+    "plyfile==1.1",
+    "tqdm>=4.67.1",
+    "shapely>=2.0.7",
+    "levenshtein>=0.27.1",
+    "google-cloud-vision>=3.10.1",
+    # Local CUDA extensions (git submodules), compiled against the torch above
+    "simple-knn",
+    "diff-gaussian-rasterization",
+    "fused-ssim",
+]
+
+[tool.uv]
+# Only resolve for the platforms the CUDA wheels exist for.
+environments = ["sys_platform == 'win32'", "sys_platform == 'linux'"]
+default-groups = ["build"]
+
+# The CUDA extensions import torch from setup.py, so they must be built inside
+# the project venv (where torch is already installed), not in an isolated env.
+# scripts/setup_windows.ps1 installs everything else first, then builds these.
+no-build-isolation-package = ["simple-knn", "diff-gaussian-rasterization", "fused-ssim"]
+
+# Static metadata so uv can lock without building the extensions.
+[[tool.uv.dependency-metadata]]
+name = "simple-knn"
+version = "0.0.0"
+requires-dist = []
+
+[[tool.uv.dependency-metadata]]
+name = "diff-gaussian-rasterization"
+version = "0.0.0"
+requires-dist = []
+
+[[tool.uv.dependency-metadata]]
+name = "fused-ssim"
+version = "1.0.0"
+requires-dist = ["torch>=2.0.0"]
+
+[tool.uv.sources]
+torch = { index = "pytorch-cu129" }
+torchvision = { index = "pytorch-cu129" }
+simple-knn = { path = "submodules/simple-knn" }
+diff-gaussian-rasterization = { path = "submodules/diff-gaussian-rasterization" }
+fused-ssim = { path = "submodules/fused-ssim" }
+
+[[tool.uv.index]]
+name = "pytorch-cu129"
+url = "https://download.pytorch.org/whl/cu129"
+explicit = true
+
+[dependency-groups]
+# Needed in the venv because the extensions are built without isolation.
+build = ["setuptools>=70", "wheel", "ninja"]

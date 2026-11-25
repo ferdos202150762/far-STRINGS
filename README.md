@@ -54,6 +54,26 @@ as compared to vanilla 3DGS (top)</em>
     pip install submodules/*
     ```
 
+### Windows + Blackwell GPUs (uv)
+
+Uses torch 2.8 built for CUDA 12.9 (required for Blackwell, sm_100 / sm_120) and Python 3.12.
+
+Prerequisites: NVIDIA driver, [CUDA Toolkit 12.9](https://developer.nvidia.com/cuda-12-9-0-download-archive), [Build Tools for Visual Studio 2022](https://visualstudio.microsoft.com/visual-cpp-build-tools/) with the *Desktop development with C++* workload, git and [uv](https://docs.astral.sh/uv/).
+
+```powershell
+git clone https://github.com/ferdos202150762/far-STRINGS.git
+cd far-STRINGS
+git submodule update --init --recursive submodules/
+
+# One-time: installs dependencies and compiles the CUDA extensions for your GPU
+powershell -ExecutionPolicy Bypass -File scripts\setup_windows.ps1
+
+# Train + render + metrics on every dataset found in .\Datasets
+powershell -ExecutionPolicy Bypass -File scripts\run_eval.ps1
+```
+
+`run_eval.ps1` accepts `-DatasetRoot`, `-Output`, `-SkipOcr`, and any `full_eval.py` flag (e.g. `--scenes books globe`, `--skip_training`). OCR metrics call the Google Cloud Vision API and only run when `GOOGLE_APPLICATION_CREDENTIALS` points to a service-account JSON key.
+
 ## Datasets
 
 Download all the datasets (STRinGS-360, Tanks&Temples and DL3DV-10K Benchmark) used in the paper [here](https://drive.google.com/drive/folders/17_rvrx7JYrCaDjWRKG1RuJSKLXUuD9Hq?usp=sharing). Place the `Datasets` folder in the root directory of the repository.
